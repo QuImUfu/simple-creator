@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "simple_creator",
+  "version": "${version}",
+  "name": "Simple Item/Block Creator",
+  "description": "Makes it possible to add simple blocks/items via datapacks.",
+  "authors": [
+    "QuImUfu"
+  ],
+  "contributors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/simple_creator/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "quimufu.simple_creator.SimpleCreatorMod"
+    ],
+    "client": [],
+    "server": []
+  },
+  "mixins": [],
+  "depends": {
+    "fabricloader": ">=0.4.0",
+    "fabric": "*"
+  }
+}

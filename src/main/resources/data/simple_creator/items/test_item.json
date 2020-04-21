@@ -1,0 +1,23 @@
+{
+  "group" :"food",
+  "durability" : 15,
+  "stackSize": 25,
+  "rarity" :"rare",
+  "food": {
+    "hunger": 4,
+    "saturationModifier": 0.3,
+    "isAlwaysEdible": true,
+    "isWolfFood": false,
+    "isFast": true,
+    "effects": [
+      {
+        "effect": "minecraft:poison",
+        "duration": 200,
+        "amplifier": 1,
+        "ambient": false,
+        "visible": true,
+        "chance": 1.0
+      }
+    ]
+  }
+}
