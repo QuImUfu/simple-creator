@@ -17,7 +17,10 @@
       "quimufu.simple_creator.SimpleCreatorMod"
     ],
     "client": [],
-    "server": []
+    "server": [],
+    "modmenu": [
+      "quimufu.simple_creator.SimpleCreatorModMenuIntegration"
+    ]
   },
   "mixins": [],
   "depends": {

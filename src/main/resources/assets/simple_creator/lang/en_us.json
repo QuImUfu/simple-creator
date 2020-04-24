@@ -1,3 +1,6 @@
 {
-  "item.simple_creator.test_item": "Forbidden Fruit"
+  "text.autoconfig.simple_creator.title": "Simple Item/Block Creator Settings",
+  "text.autoconfig.simple_creator.option.enableTestThings": "Enable a test item and block",
+  "item.simple_creator.test_item": "Forbidden Fruit",
+  "block.simple_creator.test_block": "Fast jumpy wooly diamond-dropping block of Eternal Fire"
 }

@@ -4,9 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import net.minecraft.block.Block;
-import net.minecraft.block.Material;
-import net.minecraft.block.MaterialColor;
+import net.minecraft.block.*;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -49,86 +47,223 @@ public class BlockResourceLoader extends GenericManualResourceLoader<Pair<Block,
     @Override
     protected Pair<Block, Item> deserialize(Pair<Identifier, JsonObject> e) {
         JsonObject jo = e.getRight();
-
-        PistonBehavior pistonBehavior;
-        boolean blocksMovement;
-        boolean burnable;
-        boolean breakByHand;
-        boolean liquid;
-        boolean replaceable;
-        boolean solid;
-        MaterialColor color;
-        boolean blocksLight;
         Material material;
-        String materialStr = JsonHelper.getString(jo, "material", "stone");
-        material = getMaterial(materialStr);
+        if(JsonHelper.hasString(jo, "material")){
+            String materialString = JsonHelper.getString(jo, "material");
+            material = getMaterial(materialString);
+        } else if (JsonHelper.getObject(jo,"material", null)!=null){
+            // get material information
+            JsonObject jmo = JsonHelper.getObject(jo, "material");
+            MaterialSettingsPojo mspj = GSON.fromJson(jmo, MaterialSettingsPojo.class);
+            //build material
+            material = getSettings(mspj);
+        } else {
+            material = Material.EARTH;
+        }
+
+        // get block information
+        BlockSettingsPojo bspj = GSON.fromJson(jo, BlockSettingsPojo.class);
+
+        // move block information in Block.Settings (!!hacky!!)
+        Block.Settings bs = getSettings(material, bspj);
+
+        // parse item group
+        String group = JsonHelper.getString(jo, "itemGroup", "misc");
+        ItemGroup g = ItemResourceLoader.findGroup(group);
+        //create block and corresponding item
+        Block resB = new Block(bs);
+        Item resI = new BlockItem(resB, new Item.Settings().group(g));
+
+        FireBlock fireBlock = (FireBlock) Blocks.FIRE;
+
+        int burnChance = JsonHelper.getInt(jo,"burnChance", -1);
+        int spreadChance = JsonHelper.getInt(jo,"spreadChance", -1);
+        if(burnChance!=-1 && spreadChance!=-1){
+            //spreadChance and burnChance are the wrong way around in yarn
+            fireBlock.registerFlammableBlock(resB, spreadChance, burnChance);
+        }
 
 
-        // construct block information
-        BlockSoundGroup soundGroup;
-        Identifier dropTableId;
-        boolean collidable;
-        int luminance;
-        float resistance;
-        float hardness;
-        float slipperiness;
-        float slowDownMultiplier;
-        float jumpVelocityMultiplier;
-        boolean opaque;
+        return new Pair<>(resB, resI);
+    }
 
-        String soundGroupStr = JsonHelper.getString(jo, "soundGroup", "stone");
-        soundGroup = getSoundGroup(soundGroupStr);
-        String dropTableIdStr = JsonHelper.getString(jo, "dropTableId", null);
-        dropTableId = getDropTableId(dropTableIdStr);
-        collidable = JsonHelper.getBoolean(jo, "collidable", true);
-        luminance = JsonHelper.getInt(jo, "lightLevel", 0);
-        resistance = JsonHelper.getFloat(jo, "explosionResistance", 6.0F);
-        hardness = JsonHelper.getFloat(jo, "hardness", 1.5F);
-        slipperiness = JsonHelper.getFloat(jo, "slipperiness", 0.6F);
-        slowDownMultiplier = JsonHelper.getFloat(jo, "slowDownMultiplier", 1.0F);
-        jumpVelocityMultiplier = JsonHelper.getFloat(jo, "jumpVelocityMultiplier", 1.0F);
-        opaque = JsonHelper.getBoolean(jo, "opaque", true);
+    private Material getSettings(MaterialSettingsPojo mspj) {
+        return new Material(
+                MaterialColor.PINK,
+                mspj.liquid,
+                mspj.solid,
+                mspj.blocksMovement,
+                mspj.blocksLight,
+                mspj.breakByHand,
+                mspj.burnable,
+                mspj.replaceable,
+                getPistonBehavior(mspj.pistonBehavior));
 
-        // save block information in Block.Settings (!!hacky!!)
+    }
+
+    private PistonBehavior getPistonBehavior(String pistonBehavior) {
+        switch (pistonBehavior.toUpperCase()) {
+            case "NORMAL":
+                return PistonBehavior.NORMAL;
+            case "DESTROY":
+                return PistonBehavior.DESTROY;
+            case "BLOCK":
+                return PistonBehavior.BLOCK;
+            case "IGNORE":
+                return PistonBehavior.IGNORE;
+            case "PUSH_ONLY":
+                return PistonBehavior.PUSH_ONLY;
+            default:
+                log(Level.WARN, "Piston Behavior " + pistonBehavior + " not found, using normal");
+                return PistonBehavior.NORMAL;
+
+        }
+    }
+
+    private MaterialColor getMaterialColor(String color) {
+        switch (color.toUpperCase()) {
+            case "AIR":
+                return MaterialColor.AIR;
+            case "GRASS":
+                return MaterialColor.GRASS;
+            case "SAND":
+                return MaterialColor.SAND;
+            case "WEB":
+                return MaterialColor.WEB;
+            case "LAVA":
+                return MaterialColor.LAVA;
+            case "ICE":
+                return MaterialColor.ICE;
+            case "IRON":
+                return MaterialColor.IRON;
+            case "FOLIAGE":
+                return MaterialColor.FOLIAGE;
+            case "WHITE":
+                return MaterialColor.WHITE;
+            case "CLAY":
+                return MaterialColor.CLAY;
+            case "DIRT":
+                return MaterialColor.DIRT;
+            case "STONE":
+                return MaterialColor.STONE;
+            case "WATER":
+                return MaterialColor.WATER;
+            case "WOOD":
+                return MaterialColor.WOOD;
+            case "QUARTZ":
+                return MaterialColor.QUARTZ;
+            case "ORANGE":
+                return MaterialColor.ORANGE;
+            case "MAGENTA":
+                return MaterialColor.MAGENTA;
+            case "LIGHT_BLUE":
+                return MaterialColor.LIGHT_BLUE;
+            case "YELLOW":
+                return MaterialColor.YELLOW;
+            case "LIME":
+                return MaterialColor.LIME;
+            case "PINK":
+                return MaterialColor.PINK;
+            case "GRAY":
+                return MaterialColor.GRAY;
+            case "LIGHT_GRAY":
+                return MaterialColor.LIGHT_GRAY;
+            case "CYAN":
+                return MaterialColor.CYAN;
+            case "PURPLE":
+                return MaterialColor.PURPLE;
+            case "BLUE":
+                return MaterialColor.BLUE;
+            case "BROWN":
+                return MaterialColor.BROWN;
+            case "GREEN":
+                return MaterialColor.GREEN;
+            case "RED":
+                return MaterialColor.RED;
+            case "BLACK":
+                return MaterialColor.BLACK;
+            case "GOLD":
+                return MaterialColor.GOLD;
+            case "DIAMOND":
+                return MaterialColor.DIAMOND;
+            case "LAPIS":
+                return MaterialColor.LAPIS;
+            case "EMERALD":
+                return MaterialColor.EMERALD;
+            case "SPRUCE":
+                return MaterialColor.SPRUCE;
+            case "NETHER":
+                return MaterialColor.NETHER;
+            case "WHITE_TERRACOTTA":
+                return MaterialColor.WHITE_TERRACOTTA;
+            case "ORANGE_TERRACOTTA":
+                return MaterialColor.ORANGE_TERRACOTTA;
+            case "MAGENTA_TERRACOTTA":
+                return MaterialColor.MAGENTA_TERRACOTTA;
+            case "LIGHT_BLUE_TERRACOTTA":
+                return MaterialColor.LIGHT_BLUE_TERRACOTTA;
+            case "YELLOW_TERRACOTTA":
+                return MaterialColor.YELLOW_TERRACOTTA;
+            case "LIME_TERRACOTTA":
+                return MaterialColor.LIME_TERRACOTTA;
+            case "PINK_TERRACOTTA":
+                return MaterialColor.PINK_TERRACOTTA;
+            case "GRAY_TERRACOTTA":
+                return MaterialColor.GRAY_TERRACOTTA;
+            case "LIGHT_GRAY_TERRACOTTA":
+                return MaterialColor.LIGHT_GRAY_TERRACOTTA;
+            case "CYAN_TERRACOTTA":
+                return MaterialColor.CYAN_TERRACOTTA;
+            case "PURPLE_TERRACOTTA":
+                return MaterialColor.PURPLE_TERRACOTTA;
+            case "BLUE_TERRACOTTA":
+                return MaterialColor.BLUE_TERRACOTTA;
+            case "BROWN_TERRACOTTA":
+                return MaterialColor.BROWN_TERRACOTTA;
+            case "GREEN_TERRACOTTA":
+                return MaterialColor.GREEN_TERRACOTTA;
+            case "RED_TERRACOTTA":
+                return MaterialColor.RED_TERRACOTTA;
+            case "BLACK_TERRACOTTA":
+                return MaterialColor.BLACK_TERRACOTTA;
+            default:
+                log(Level.WARN, "MapColor " + color + " not found, using pink");
+                return MaterialColor.PINK;
+        }
+    }
+
+    private Block.Settings getSettings(Material material, BlockSettingsPojo bspj) {
         Block.Settings bs = Block.Settings.of(material, material.getColor());
         Field[] fields = Block.Settings.class.getDeclaredFields();
         try {
             fields[0].setAccessible(true);
             fields[0].set(bs, material);
             fields[1].setAccessible(true);
-            fields[1].set(bs, material.getColor());
+            fields[1].set(bs, getMaterialColor(bspj.mapColor));
             fields[2].setAccessible(true);
-            fields[2].setBoolean(bs, collidable);
+            fields[2].setBoolean(bs, bspj.collidable);
             fields[3].setAccessible(true);
-            fields[3].set(bs, soundGroup);
+            fields[3].set(bs, getSoundGroup(bspj.soundGroup));
             fields[4].setAccessible(true);
-            fields[4].setInt(bs, luminance);
+            fields[4].setInt(bs, bspj.lightLevel);
             fields[5].setAccessible(true);
-            fields[5].setFloat(bs, resistance);
+            fields[5].setFloat(bs, bspj.explosionResistance);
             fields[6].setAccessible(true);
-            fields[6].setFloat(bs, hardness);
+            fields[6].setFloat(bs, bspj.hardness);
             fields[8].setAccessible(true);
-            fields[8].setFloat(bs, slipperiness);
+            fields[8].setFloat(bs, bspj.slipperiness);
             fields[9].setAccessible(true);
-            fields[9].setFloat(bs, slowDownMultiplier);
+            fields[9].setFloat(bs, bspj.slowDownMultiplier);
             fields[10].setAccessible(true);
-            fields[10].setFloat(bs, jumpVelocityMultiplier);
+            fields[10].setFloat(bs, bspj.jumpVelocityMultiplier);
             fields[11].setAccessible(true);
-            fields[11].set(bs, dropTableId);
+            fields[11].set(bs, getDropTableId(bspj.dropTableId));
             fields[12].setAccessible(true);
-            fields[12].setBoolean(bs, opaque);
+            fields[12].setBoolean(bs, bspj.opaque);
         } catch (IllegalAccessException ex) {
             ex.printStackTrace();
         }
-
-        // parse item group
-        String group = JsonHelper.getString(jo, "group", "misc");
-        ItemGroup g = ItemResourceLoader.findGroup(group);
-        //create block and corresponding item
-        Block resB = new Block(bs);
-        Item resI = new BlockItem(resB, new Item.Settings().group(g));
-
-        return new Pair<>(resB, resI);
+        return bs;
     }
 
     private Identifier getDropTableId(String s) {

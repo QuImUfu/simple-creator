@@ -1,0 +1,21 @@
+"material":
+
+//controls what happens when a piston pushes this block
+
+"blocksMovement" ~ boolean 
+//this sets whether water can flow away this block if "collidable" is false, otherwise subtily changes how fluids look around it
+
+"collidable" ~ boolean 
+//this sets whether the block has collision. if false you (and monsters) can walk throught the block.
+
+"burnable" ~ boolean
+//does lava ignite the block
+
+"burnChance" ~ int 
+//how fast the block burns down (leaves 60, wood 5, flowers 100) if 0, block will never burn down.
+
+"spreadChance" ~ int 
+//how easily this block catches fire ( wood 5, leaves 30, flowers 60) if null, block can only be ignited by lava if burnable.
+
+"breakByHand" ~ boolean
+//this sets whether the block drops when brocken without tool.
