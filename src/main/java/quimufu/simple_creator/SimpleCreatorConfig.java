@@ -1,7 +1,7 @@
 package quimufu.simple_creator;
 
-import me.sargunvohra.mcmods.autoconfig1u.ConfigData;
-import me.sargunvohra.mcmods.autoconfig1u.annotation.Config;
+import me.shedaniel.autoconfig.ConfigData;
+import me.shedaniel.autoconfig.annotation.Config;
 
 @Config(name = "simple_creator")
 public class SimpleCreatorConfig  implements ConfigData {

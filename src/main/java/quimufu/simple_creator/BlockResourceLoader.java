@@ -4,6 +4,9 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.fabricmc.fabric.api.registry.FlammableBlockRegistry;
+import net.fabricmc.fabric.mixin.object.builder.AbstractBlockSettingsAccessor;
 import net.minecraft.block.*;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.item.BlockItem;
@@ -16,7 +19,6 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.Level;
 
-import java.lang.reflect.Field;
 import java.util.Map;
 
 import static quimufu.simple_creator.SimpleCreatorMod.log;
@@ -58,7 +60,7 @@ public class BlockResourceLoader extends GenericManualResourceLoader<Pair<Block,
             //build material
             material = getSettings(mspj);
         } else {
-            material = Material.EARTH;
+            material = Material.SOIL;
         }
 
         // get block information
@@ -74,29 +76,23 @@ public class BlockResourceLoader extends GenericManualResourceLoader<Pair<Block,
         Block resB = new Block(bs);
         Item resI = new BlockItem(resB, new Item.Settings().group(g));
 
-        FireBlock fireBlock = (FireBlock) Blocks.FIRE;
-
         int burnChance = JsonHelper.getInt(jo,"burnChance", -1);
         int spreadChance = JsonHelper.getInt(jo,"spreadChance", -1);
         if(burnChance!=-1 && spreadChance!=-1){
-            //spreadChance and burnChance are the wrong way around in yarn
-            fireBlock.registerFlammableBlock(resB, spreadChance, burnChance);
+            FlammableBlockRegistry.getDefaultInstance().add(resB, spreadChance, burnChance);
         }
-
-
         return new Pair<>(resB, resI);
     }
 
     private Material getSettings(MaterialSettingsPojo mspj) {
         return new Material(
-                MaterialColor.PINK,
+                getMaterialColor(mspj.materialColor),
                 mspj.liquid,
                 mspj.solid,
                 mspj.blocksMovement,
                 mspj.blocksLight,
                 mspj.breakByHand,
                 mspj.burnable,
-                mspj.replaceable,
                 getPistonBehavior(mspj.pistonBehavior));
 
     }
@@ -123,7 +119,8 @@ public class BlockResourceLoader extends GenericManualResourceLoader<Pair<Block,
     private MaterialColor getMaterialColor(String color) {
         switch (color.toUpperCase()) {
             case "AIR":
-                return MaterialColor.AIR;
+            case "CLEAR":
+                return MaterialColor.CLEAR;
             case "GRASS":
                 return MaterialColor.GRASS;
             case "SAND":
@@ -226,6 +223,21 @@ public class BlockResourceLoader extends GenericManualResourceLoader<Pair<Block,
                 return MaterialColor.RED_TERRACOTTA;
             case "BLACK_TERRACOTTA":
                 return MaterialColor.BLACK_TERRACOTTA;
+            case "CRIMSON_NYLIUM":
+                return MaterialColor.field_25702;
+            case "CRIMSON_WOOD":
+                return MaterialColor.field_25703;
+            case "CRIMSON_HYPHAE":
+                return MaterialColor.field_25704;
+            case "WARPED_NYLIUM":
+                return MaterialColor.field_25705;
+            case "WARPED_WOOD":
+                return MaterialColor.field_25706;
+            case "WARPED_HYPHAE":
+                return MaterialColor.field_25707;
+            case "WARPED_WART_BLOCK":
+                return MaterialColor.field_25708;
+
             default:
                 log(Level.WARN, "MapColor " + color + " not found, using pink");
                 return MaterialColor.PINK;
@@ -233,37 +245,21 @@ public class BlockResourceLoader extends GenericManualResourceLoader<Pair<Block,
     }
 
     private Block.Settings getSettings(Material material, BlockSettingsPojo bspj) {
-        Block.Settings bs = Block.Settings.of(material, material.getColor());
-        Field[] fields = Block.Settings.class.getDeclaredFields();
-        try {
-            fields[0].setAccessible(true);
-            fields[0].set(bs, material);
-            fields[1].setAccessible(true);
-            fields[1].set(bs, getMaterialColor(bspj.mapColor));
-            fields[2].setAccessible(true);
-            fields[2].setBoolean(bs, bspj.collidable);
-            fields[3].setAccessible(true);
-            fields[3].set(bs, getSoundGroup(bspj.soundGroup));
-            fields[4].setAccessible(true);
-            fields[4].setInt(bs, bspj.lightLevel);
-            fields[5].setAccessible(true);
-            fields[5].setFloat(bs, bspj.explosionResistance);
-            fields[6].setAccessible(true);
-            fields[6].setFloat(bs, bspj.hardness);
-            fields[8].setAccessible(true);
-            fields[8].setFloat(bs, bspj.slipperiness);
-            fields[9].setAccessible(true);
-            fields[9].setFloat(bs, bspj.slowDownMultiplier);
-            fields[10].setAccessible(true);
-            fields[10].setFloat(bs, bspj.jumpVelocityMultiplier);
-            fields[11].setAccessible(true);
-            fields[11].set(bs, getDropTableId(bspj.dropTableId));
-            fields[12].setAccessible(true);
-            fields[12].setBoolean(bs, bspj.opaque);
-        } catch (IllegalAccessException ex) {
-            ex.printStackTrace();
-        }
-        return bs;
+        FabricBlockSettings fabricBlockSettings = FabricBlockSettings.of(material, material.getColor());
+        AbstractBlockSettingsAccessor bs = (AbstractBlockSettingsAccessor) fabricBlockSettings;
+        bs.setMaterial(material);
+        bs.setMaterialColorFactory(ignored -> material.getColor());
+        bs.setCollidable(bspj.collidable);
+        fabricBlockSettings.sounds(getSoundGroup(bspj.soundGroup));
+        bs.setLuminanceFunction(ignored -> bspj.lightLevel);
+        bs.setResistance(bspj.explosionResistance);
+        bs.setHardness(bspj.hardness);
+        fabricBlockSettings.slipperiness(bspj.slipperiness);
+        fabricBlockSettings.velocityMultiplier(bspj.slowDownMultiplier);
+        fabricBlockSettings.jumpVelocityMultiplier(bspj.jumpVelocityMultiplier);
+        bs.setLootTableId(getDropTableId(bspj.dropTableId));
+        bs.setOpaque(bspj.opaque);
+        return fabricBlockSettings;
     }
 
     private Identifier getDropTableId(String s) {
@@ -285,6 +281,8 @@ public class BlockResourceLoader extends GenericManualResourceLoader<Pair<Block,
                 return BlockSoundGroup.GRAVEL;
             case "GRASS":
                 return BlockSoundGroup.GRASS;
+            case "LILY_PAD":
+                return BlockSoundGroup.LILY_PAD;
             case "STONE":
                 return BlockSoundGroup.STONE;
             case "METAL":
@@ -321,10 +319,56 @@ public class BlockResourceLoader extends GenericManualResourceLoader<Pair<Block,
                 return BlockSoundGroup.CROP;
             case "STEM":
                 return BlockSoundGroup.STEM;
+            case "VINE":
+                return BlockSoundGroup.VINE;
             case "NETHER_WART":
                 return BlockSoundGroup.NETHER_WART;
             case "LANTERN":
                 return BlockSoundGroup.LANTERN;
+            case "NETHER_STEM":
+                return BlockSoundGroup.NETHER_STEM;
+            case "NYLIUM":
+                return BlockSoundGroup.NYLIUM;
+            case "FUNGUS":
+                return BlockSoundGroup.FUNGUS;
+            case "ROOTS":
+                return BlockSoundGroup.ROOTS;
+            case "SHROOMLIGHT":
+                return BlockSoundGroup.SHROOMLIGHT;
+            case "WEEPING_VINES":
+                return BlockSoundGroup.WEEPING_VINES;
+            case "WEEPING_VINES_LOW_PITCH":
+                return BlockSoundGroup.WEEPING_VINES_LOW_PITCH;
+            case "SOUL_SAND":
+                return BlockSoundGroup.SOUL_SAND;
+            case "SOUL_SOIL":
+                return BlockSoundGroup.SOUL_SOIL;
+            case "BASALT":
+                return BlockSoundGroup.BASALT;
+            case "WART_BLOCK":
+                return BlockSoundGroup.WART_BLOCK;
+            case "NETHERRACK":
+                return BlockSoundGroup.NETHERRACK;
+            case "NETHER_BRICKS":
+                return BlockSoundGroup.NETHER_BRICKS;
+            case "NETHER_SPROUTS":
+                return BlockSoundGroup.NETHER_SPROUTS;
+            case "NETHER_ORE":
+                return BlockSoundGroup.NETHER_ORE;
+            case "BONE":
+                return BlockSoundGroup.BONE;
+            case "NETHERITE":
+                return BlockSoundGroup.NETHERITE;
+            case "ANCIENT_DEBRIS":
+                return BlockSoundGroup.ANCIENT_DEBRIS;
+            case "LODESTONE":
+                return BlockSoundGroup.LODESTONE;
+            case "CHAIN":
+                return BlockSoundGroup.CHAIN;
+            case "NETHER_GOLD_ORE":
+                return BlockSoundGroup.NETHER_GOLD_ORE;
+            case "GILDED_BLACKSTONE":
+                return BlockSoundGroup.GILDED_BLACKSTONE;
             default:
                 log(Level.WARN, "Sound group " + s + " not found, using stone");
                 return BlockSoundGroup.STONE;
@@ -347,40 +391,52 @@ public class BlockResourceLoader extends GenericManualResourceLoader<Pair<Block,
                 return Material.UNDERWATER_PLANT;
             case "REPLACEABLE_PLANT":
                 return Material.REPLACEABLE_PLANT;
+            case "NETHER_SHOOTS":
+                return Material.NETHER_SHOOTS;
+            case "REPLACEABLE_UNDERWATER_PLANT":
             case "SEAGRASS":
-                return Material.SEAGRASS;
+                return Material.REPLACEABLE_UNDERWATER_PLANT;
             case "WATER":
                 return Material.WATER;
             case "BUBBLE_COLUMN":
                 return Material.BUBBLE_COLUMN;
             case "LAVA":
                 return Material.LAVA;
+            case "SNOW_LAYER":
             case "SNOW":
-                return Material.SNOW;
+                return Material.SNOW_LAYER;
             case "FIRE":
                 return Material.FIRE;
+            case "SUPPORTED":
             case "PART":
-                return Material.PART;
+                return Material.SUPPORTED;
             case "COBWEB":
                 return Material.COBWEB;
             case "REDSTONE_LAMP":
                 return Material.REDSTONE_LAMP;
+            case "ORGANIC_PRODUCT":
             case "CLAY":
-                return Material.CLAY;
+                return Material.ORGANIC_PRODUCT;
+            case "SOIL":
             case "EARTH":
-                return Material.EARTH;
+                return Material.SOIL;
+            case "SOLID_ORGANIC":
             case "ORGANIC":
-                return Material.ORGANIC;
+                return Material.SOLID_ORGANIC;
+            case "DENSE_ICE":
             case "PACKED_ICE":
-                return Material.PACKED_ICE;
+                return Material.DENSE_ICE;
+            case "AGGREGATE":
             case "SAND":
-                return Material.SAND;
+                return Material.AGGREGATE;
             case "SPONGE":
                 return Material.SPONGE;
             case "SHULKER_BOX":
                 return Material.SHULKER_BOX;
             case "WOOD":
                 return Material.WOOD;
+            case "NETHER_WOOD":
+                return Material.NETHER_WOOD;
             case "BAMBOO_SAPLING":
                 return Material.BAMBOO_SAPLING;
             case "BAMBOO":
@@ -403,16 +459,18 @@ public class BlockResourceLoader extends GenericManualResourceLoader<Pair<Block,
                 return Material.METAL;
             case "SNOW_BLOCK":
                 return Material.SNOW_BLOCK;
+            case "REPAIR_STATION":
             case "ANVIL":
-                return Material.ANVIL;
+                return Material.REPAIR_STATION;
             case "BARRIER":
                 return Material.BARRIER;
             case "PISTON":
                 return Material.PISTON;
             case "UNUSED_PLANT":
                 return Material.UNUSED_PLANT;
+            case "GOURD":
             case "PUMPKIN":
-                return Material.PUMPKIN;
+                return Material.GOURD;
             case "EGG":
                 return Material.EGG;
             case "CAKE":

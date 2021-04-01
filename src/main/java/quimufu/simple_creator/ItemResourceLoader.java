@@ -136,12 +136,12 @@ public class ItemResourceLoader extends GenericManualResourceLoader<Item> {
 
     public static ItemGroup findGroup(String filter) {
         for (ItemGroup g : ItemGroup.GROUPS) {
-            if (g.getName().toLowerCase().equals(filter.toLowerCase())) {
+            if (g.getName().equalsIgnoreCase(filter)) {
                 return g;
             }
         }
         log(Level.WARN, "Item Group " + filter + " not found, using misc");
-        log(Level.INFO, "Valid groups:" + Arrays.stream(ItemGroup.GROUPS).map(ItemGroup::getId));
+        log(Level.INFO, "Valid groups:" + Arrays.stream(ItemGroup.GROUPS).map(ItemGroup::getName));
         return ItemGroup.MISC;
     }
 

@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
+import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.fabric.impl.resource.loader.ModResourcePackCreator;
 import net.minecraft.resource.*;
 import net.minecraft.util.Identifier;
@@ -16,7 +16,9 @@ import org.apache.logging.log4j.Level;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
+import static net.minecraft.resource.ResourcePackSource.method_29486;
 import static quimufu.simple_creator.SimpleCreatorMod.log;
 
 public abstract class GenericManualResourceLoader<T> {
@@ -50,11 +52,19 @@ public abstract class GenericManualResourceLoader<T> {
 
     public void load() {
         config = AutoConfig.getConfigHolder(SimpleCreatorConfig.class).getConfig();
-        ResourcePackManager<ResourcePackProfile> resourcePackManager = new ResourcePackManager<>(ResourcePackProfile::new);
-        resourcePackManager.registerProvider(new VanillaDataPackProvider());
-        resourcePackManager.registerProvider(new FileResourcePackProvider(new File("./datapacks")));
-        if (config.enableTestThings)
-            resourcePackManager.registerProvider(new ModResourcePackCreator(ResourceType.SERVER_DATA));
+        ResourcePackManager resourcePackManager;
+        if (!config.enableTestThings) {
+            resourcePackManager =
+                    new ResourcePackManager(ResourcePackProfile::new,
+                            new VanillaDataPackProvider(),
+                            new FileResourcePackProvider(new File("./datapacks"), method_29486("pack.source.global")));
+        } else {
+            resourcePackManager =
+                    new ResourcePackManager(ResourcePackProfile::new,
+                            new VanillaDataPackProvider(),
+                            new FileResourcePackProvider(new File("./datapacks"), method_29486("pack.source.global")),
+                            new ModResourcePackCreator(ResourceType.SERVER_DATA));
+        }
         resourcePackManager.scanPacks();
         List<ResourcePackProfile> ep = Lists.newArrayList(resourcePackManager.getEnabledProfiles());
         for (ResourcePackProfile rpp : resourcePackManager.getProfiles()) {
@@ -62,8 +72,7 @@ public abstract class GenericManualResourceLoader<T> {
                 rpp.getInitialPosition().insert(ep, rpp, resourcePackProfile -> resourcePackProfile, false);
             }
         }
-        resourcePackManager.setEnabledProfiles(ep);
-
+        resourcePackManager.setEnabledProfiles(ep.stream().map(ResourcePackProfile::getName).collect(Collectors.toList()));
 
         ArrayList<Pair<Identifier, JsonObject>> itemJsonList = new ArrayList<>();
         HashMap<Identifier, JsonObject> itemJsonMap = Maps.newHashMap();

@@ -1,8 +1,7 @@
 package quimufu.simple_creator;
 
-import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
-import me.sargunvohra.mcmods.autoconfig1u.ConfigHolder;
-import me.sargunvohra.mcmods.autoconfig1u.serializer.GsonConfigSerializer;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
