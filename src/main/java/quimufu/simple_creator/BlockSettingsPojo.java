@@ -11,5 +11,19 @@ public class BlockSettingsPojo {
     public float slowDownMultiplier = 1.0F;
     public float jumpVelocityMultiplier = 1.0F;
     public boolean opaque = true;
+    public boolean allowsSpawning = true;
+    public boolean solidBlock = true;
+    public boolean suffocates = true;
+    public boolean blockVision = true;
+    public boolean postProcess = false;
+    public boolean emissiveLighting = false;
+    public String modelOffset = "none";
+    public String pistonBehavior = "normal";
+    public String instrument = "harp";
+    public boolean burnable = false;
+    public boolean replaceable = false;
+    public boolean noBlockBreakParticles = false;
+    public boolean requiresTool = false;
+    public boolean breaksInstantly = false;
     String mapColor = "stone";
 }

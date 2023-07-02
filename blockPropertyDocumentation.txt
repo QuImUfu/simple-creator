@@ -1,21 +1,70 @@
-"material":
+"soundGroup" ~ string
+    one of:
+        intentionally_empty, wood, gravel, grass, lily_pad, stone,
+        metal, glass, wool, sand, snow, powder_snow, ladder, anvil,
+        slime, honey, wet_grass, coral, bamboo, bamboo_sapling,
+        scaffolding, sweet_berry_bush, crop, stem, vine, nether_wart,
+        lantern, nether_stem, nylium, fungus, roots, shroomlight,
+        weeping_vines, weeping_vines_low_pitch, soul_sand, soul_soil,
+        basalt, wart_block, netherrack, nether_bricks, nether_sprouts,
+        nether_ore, bone, netherite, ancient_debris, lodestone, chain,
+        nether_gold_ore, gilded_blackstone, candle, amethyst_block,
+        amethyst_cluster, small_amethyst_bud, medium_amethyst_bud,
+        large_amethyst_bud, tuff, calcite, dripstone_block,
+        pointed_dripstone, copper, cave_vines, spore_blossom, azalea,
+        flowering_azalea, moss_carpet, pink_petals, moss_block, big_dripleaf,
+        small_dripleaf, rooted_dirt, hanging_roots, azalea_leaves,
+        sculk_sensor, sculk_catalyst, sculk, sculk_vein, sculk_shrieker,
+        glow_lichen, deepslate, deepslate_bricks, deepslate_tiles,
+        polished_deepslate, froglight, frogspawn, mangrove_roots,
+        muddy_mangrove_roots, mud, mud_bricks, packed_mud, hanging_sign,
+        nether_wood_hanging_sign, bamboo_wood_hanging_sign, bamboo_wood,
+        nether_wood, cherry_wood, cherry_sapling, cherry_leaves,
+        cherry_wood_hanging_sign, chiseled_bookshelf, suspicious_sand,
+        suspicious_gravel, decorated_pot, decorated_pot_shatter
+    changes how the block sounds
 
-//controls what happens when a piston pushes this block
+"dropTableId" ~ string
+    the id of the drop table to use e.g. "minecraft:blocks/diamond_ore"
+    what loot table is used for blockdrops when broken successfully
+
+"collidable" ~ boolean
+    this sets whether the block has collision. if false you (and monsters) can walk throught the block.
+
+"lightLevel" ~ int
+    0-15
+    how much light does the block produce
+
+"explosionResistance" ~ float
+    0.0-3600000.0+
+    the resistance against explosions 6.0 is stone, 3600000.0 is bedrock, wood is usually 2.0 or 3.0
+
+"hardness" ~ float
+    -1.0-50.0+
+    how hard it is to break the block. -1.0 is unbreakable, 50.0 is obsidian, 1.5 is stone, 2.0 cobble
+
+"pistonBehavior" ~ string
+    one of:
+        normal, destroy, block, ignore, push_only
+    controls what happens when a piston pushes this block
+
+"slipperiness" ~ float
+
+"slowDownMultiplier" ~ float
+
+"jumpVelocityMultiplier" ~ float
 
 "blocksMovement" ~ boolean 
-//this sets whether water can flow away this block if "collidable" is false, otherwise subtily changes how fluids look around it
-
-"collidable" ~ boolean 
-//this sets whether the block has collision. if false you (and monsters) can walk throught the block.
+    this sets whether water can flow away this block if "collidable" is false, otherwise subtily changes how fluids look around it
 
 "burnable" ~ boolean
-//does lava ignite the block
+    does lava ignite the block
 
 "burnChance" ~ int 
-//how fast the block burns down (leaves 60, wood 5, flowers 100) if 0, block will never burn down.
+    how fast the block burns down (leaves 60, wood 5, flowers 100) if 0, block will never burn down.
 
 "spreadChance" ~ int 
-//how easily this block catches fire ( wood 5, leaves 30, flowers 60) if null, block can only be ignited by lava if burnable.
+    how easily this block catches fire ( wood 5, leaves 30, flowers 60) if null, block can only be ignited by lava if burnable.
 
-"breakByHand" ~ boolean
-//this sets whether the block drops when brocken without tool.
+"requiresTool" ~ boolean
+    this sets whether the block drops when broken without tool.

@@ -1,33 +1,24 @@
 package quimufu.simple_creator;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import me.shedaniel.autoconfig.AutoConfig;
-import net.fabricmc.fabric.impl.resource.loader.ModResourcePackCreator;
-import net.minecraft.resource.*;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
 import net.minecraft.util.Pair;
 import org.apache.logging.log4j.Level;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 
-import static net.minecraft.resource.ResourcePackSource.method_29486;
 import static quimufu.simple_creator.SimpleCreatorMod.log;
 
 public abstract class GenericManualResourceLoader<T> {
-    private Gson GSON;
-    private String dataType;
-    private SimpleCreatorConfig config;
+    private final Gson gson;
+    private final String dataType;
 
     GenericManualResourceLoader(Gson gson, String dt) {
-        GSON = gson;
+        this.gson = gson;
         dataType = dt;
     }
 
@@ -51,73 +42,91 @@ public abstract class GenericManualResourceLoader<T> {
     protected abstract void save(Identifier id, T item);
 
     public void load() {
-        config = AutoConfig.getConfigHolder(SimpleCreatorConfig.class).getConfig();
-        ResourcePackManager resourcePackManager;
-        if (!config.enableTestThings) {
-            resourcePackManager =
-                    new ResourcePackManager(ResourcePackProfile::new,
-                            new VanillaDataPackProvider(),
-                            new FileResourcePackProvider(new File("./datapacks"), method_29486("pack.source.global")));
-        } else {
-            resourcePackManager =
-                    new ResourcePackManager(ResourcePackProfile::new,
-                            new VanillaDataPackProvider(),
-                            new FileResourcePackProvider(new File("./datapacks"), method_29486("pack.source.global")),
-                            new ModResourcePackCreator(ResourceType.SERVER_DATA));
-        }
-        resourcePackManager.scanPacks();
-        List<ResourcePackProfile> ep = Lists.newArrayList(resourcePackManager.getEnabledProfiles());
-        for (ResourcePackProfile rpp : resourcePackManager.getProfiles()) {
-            if (!ep.contains(rpp)) {
-                rpp.getInitialPosition().insert(ep, rpp, resourcePackProfile -> resourcePackProfile, false);
-            }
-        }
-        resourcePackManager.setEnabledProfiles(ep.stream().map(ResourcePackProfile::getName).collect(Collectors.toList()));
 
+        if (true) {
+            createFromResource("simple_creator/blocks/test_block.json");
+            createFromResource("simple_creator/items/test_item.json");
+        }
+        File location = new File("./simplyCreated");
+
+        if (!location.exists() && !location.mkdirs()) {
+            throw new IllegalStateException("Couldn't create dir: " + location);
+        }
+
+        if (!location.isDirectory()) {
+            throw new IllegalStateException("Not a dir: " + location);
+        }
+
+        File[] modIds = location.listFiles();
         ArrayList<Pair<Identifier, JsonObject>> itemJsonList = new ArrayList<>();
-        HashMap<Identifier, JsonObject> itemJsonMap = Maps.newHashMap();
-        for (ResourcePackProfile rpp : resourcePackManager.getEnabledProfiles()) {
-            ResourcePack rp = rpp.createResourcePack();
-            log(Level.INFO, "Loading ResourcePack " + rp.getName());
-            for (String ns : rp.getNamespaces(ResourceType.SERVER_DATA)) {
-                log(Level.INFO, "Loading namespace " + ns);
-                Collection<Identifier> resources = rp.findResources(ResourceType.SERVER_DATA, ns, dataType, 5, s -> s.endsWith(".json"));
-                for (Identifier id : resources) {
-                    if (config.extendedLogging)
-                        log(Level.INFO, "found: " + id.toString() + " in Pack: " + rp.getName());
-                    Identifier idNice = new Identifier(id.getNamespace(), getName(id));
-                    try {
-                        InputStream is = rp.open(ResourceType.SERVER_DATA, id);
-                        Reader r = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-                        JsonObject jo = JsonHelper.deserialize(GSON, r, JsonObject.class);
-                        if (jo != null)
-                            if (jo.entrySet().isEmpty()) {
-                                itemJsonMap.remove(idNice);
-                                if (config.extendedLogging)
-                                    log(Level.INFO, "deleting " + idNice + " because of an empty override in " + rp.getName());
-                            } else {
-                                itemJsonMap.put(idNice, jo);
-                                if (config.extendedLogging)
-                                    log(Level.INFO, "adding " + idNice + " from " + rp.getName());
-                            }
+        if(modIds == null){
+            log(Level.INFO, "No files  found at " + location + " quitting!");
+            return;
+        }
+        for (File mod : modIds) {
+            if (!mod.isDirectory()) {
+                continue;
+            }
+            String modId = mod.getName();
+
+            File entryDir = new File(mod + "/" + dataType);
+            if (entryDir.isDirectory()) {
+                File[] entries = entryDir.listFiles();
+                if(entries == null){
+                    log(Level.INFO, "No files  found at " + entryDir + " skipping!");
+                    continue;
+                }
+
+                for (File entryJson : entries) {
+                    String blockJsonName = entryJson.getName();
+                    if(!blockJsonName.endsWith(".json")){
+                        log(Level.INFO, "Non json found at " + entryJson + " ignoring!");
+                        continue;
+                    }
+                    String entryName = blockJsonName.substring(0,blockJsonName.length()-5);
+                    Identifier identifier = new Identifier(modId, entryName);
+
+                    try (Reader reader = new FileReader(entryJson)) {
+                        JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
+                        itemJsonList.add(new Pair<>(identifier, jsonObject));
                     } catch (IOException e) {
-                        log(Level.ERROR, "error loading " + id + " " + e.getMessage());
-                    } catch (JsonParseException e) {
-                        log(Level.ERROR, "error parsing json for " + id + " " + e.getMessage());
+                        log(Level.INFO, "Could not parse " + entryJson + " ignoring!");
+                        e.printStackTrace();
+                        log(Level.INFO, e.getMessage());
                     }
                 }
             }
         }
-        for (Map.Entry<Identifier, JsonObject> e : itemJsonMap.entrySet()) {
-            itemJsonList.add(new Pair<>(e.getKey(), e.getValue()));
-        }
+
         loadItems(itemJsonList);
+
     }
 
-    private String getName(Identifier id) {
-        String path = id.getPath();
-        int startLength = dataType.length() + 1;
-        int endLength = ".json".length();
-        return path.substring(startLength, path.length() - endLength);
+    private static void createFromResource(String path) {
+        try (InputStream blocks = ClassLoader.getSystemClassLoader().getResourceAsStream("data/" + path)) {
+
+            File file = new File("./simplyCreated/" + path);
+            if (!file.exists() && blocks != null) {
+
+                File parent = file.getParentFile();
+                if (parent != null && !parent.exists() && !parent.mkdirs()) {
+                    throw new IllegalStateException("Couldn't create dir: " + parent);
+                }
+                if (!file.createNewFile()) {
+                    throw new IllegalStateException("Couldn't create file: " + file);
+                }
+
+                try (FileOutputStream out = new FileOutputStream(file)) {
+                    //copy stream
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = blocks.read(buffer)) != -1) {
+                        out.write(buffer, 0, bytesRead);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

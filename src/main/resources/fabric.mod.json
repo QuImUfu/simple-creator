@@ -18,8 +18,8 @@
     ],
     "client": [],
     "server": [],
-    "modmenu": [
-      "quimufu.simple_creator.SimpleCreatorModMenuIntegration"
+    "tweed4:config": [
+      "quimufu.simple_creator.SimpleCreatorConfig"
     ]
   },
   "mixins": [],
