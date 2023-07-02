@@ -23,7 +23,6 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
@@ -67,15 +66,15 @@ public class BlockResourceLoader extends GenericManualResourceLoader<Pair<Block,
         Block.Settings bs = getSettings(bspj);
 
         // parse item group
-        String group = JsonHelper.getString(jo, "itemGroup", "misc");
+        String group = bspj.itemGroup;
         RegistryKey<ItemGroup> g = ItemResourceLoader.findGroup(group);
         //create block and corresponding item
         Block resB = new Block(bs);
         Item resI = new BlockItem(resB, new FabricItemSettings());
         ItemGroupEvents.modifyEntriesEvent(g).register(content -> content.add(resI));
 
-        int burnChance = JsonHelper.getInt(jo, "burnChance", -1);
-        int spreadChance = JsonHelper.getInt(jo, "spreadChance", -1);
+        int burnChance = bspj.burnChance;
+        int spreadChance = bspj.spreadChance;
         if (burnChance != -1 && spreadChance != -1) {
             FlammableBlockRegistry.getDefaultInstance().add(resB, spreadChance, burnChance);
         }

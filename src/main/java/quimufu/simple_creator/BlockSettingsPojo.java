@@ -1,6 +1,8 @@
 package quimufu.simple_creator;
 
 public class BlockSettingsPojo {
+
+    public String itemGroup = "minecraft:building_blocks";
     public String soundGroup = "stone";
     public String dropTableId = null;
     public boolean collidable = true;
@@ -21,6 +23,8 @@ public class BlockSettingsPojo {
     public String pistonBehavior = "normal";
     public String instrument = "harp";
     public boolean burnable = false;
+    public int burnChance = -1;
+    public int spreadChance = -1;
     public boolean replaceable = false;
     public boolean noBlockBreakParticles = false;
     public boolean requiresTool = false;

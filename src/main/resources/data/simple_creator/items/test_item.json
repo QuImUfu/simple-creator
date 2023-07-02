@@ -1,5 +1,5 @@
 {
-  "group" :"food",
+  "group" :"minecraft:food_and_drinks",
   "durability" : 15,
   "stackSize": 25,
   "rarity" :"rare",
