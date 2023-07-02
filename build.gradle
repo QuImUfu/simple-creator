@@ -18,6 +18,8 @@ repositories {
 	// for more information about repositories.
 	maven { url 'https://maven.siphalor.de/' }
 	maven { url 'https://jitpack.io' }
+    maven { url "https://maven.shedaniel.me/" }
+    maven { url "https://maven.terraformersmc.com/releases/" }
 }
 
 loom {
@@ -44,12 +46,20 @@ dependencies {
 	// Uncomment the following line to enable the deprecated Fabric API modules.
 	// These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
 
+
 	include(modApi(platform("de.siphalor.tweed4:tweed4-bom-$project.minecraft_major_version:$project.tweed_version")))
 	// Pick any modules you want to use, e.g.:
 	include(modApi("de.siphalor.tweed4:tweed4-base-$project.minecraft_major_version"))
 	include(modApi("de.siphalor.tweed4:tweed4-annotated-$project.minecraft_major_version"))
 	include(modApi("de.siphalor.tweed4:tweed4-data-$project.minecraft_major_version"))
 	include(modApi("de.siphalor.tweed4:tweed4-data-hjson-$project.minecraft_major_version"))
+	//include(modApi("de.siphalor.tweed4:tweed4-tailor-cloth-$project.minecraft_major_version"))
+	include(modApi("de.siphalor.tweed4:tweed4-tailor-screen-$project.minecraft_major_version"))
+
+
+	modImplementation("me.shedaniel.cloth:cloth-config-fabric:$project.cloth_config_version") {
+		exclude(group: "net.fabricmc.fabric-api")
+	}
 	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 }
 
