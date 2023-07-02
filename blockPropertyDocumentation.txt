@@ -137,3 +137,24 @@
         teal (0x167E86), dark_aqua (0x3A8E8C), dark_dull_pink (0x562C3E),
         bright_teal (0x14B485), deepslate_gray (0x646464),
         raw_iron_pink (0xD8AF93), lichen_green (0x7FA796)
+
+"renderLayer" ~ string
+    one of:
+        solid, cutout_mipped, cutout, translucent,
+        translucent_moving_block, translucent_no_crumbling,
+        leash, water_mask, armor_glint, armor_entity_glint, glint_translucent,
+        glint, direct_glint, entity_glint, direct_entity_glint, text_background,
+        text_background_see_through, lightning, tripwire, end_portal,
+        end_gateway, lines, line_strip, debug_filled_box, debug_quads,
+        debug_section_quads, gui, gui_overlay, gui_text_highlight,
+        gui_ghost_recipe_overlay
+    different renderLayers allow different graphical effects.
+    Only the first 4 are interesting
+    solid = solid block no transparency
+        stone ...
+    cutout_mipped = 100% or no transparency, ?gets softened far away when mipmapping is enabled?
+        glass, leaves and similar
+    cutout = 100% or no transparency
+        flowers, saplings...
+    translucent = full alpha support
+        ice, stained glass, portal...

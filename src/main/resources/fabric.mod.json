@@ -16,15 +16,16 @@
     "main": [
       "quimufu.simple_creator.SimpleCreatorMod"
     ],
-    "client": [],
-    "server": [],
+    "client": [
+      "quimufu.simple_creator.SimpleCreatorModClient"
+    ],
     "tweed4:config": [
       "quimufu.simple_creator.SimpleCreatorConfig"
     ]
   },
   "mixins": [],
   "depends": {
-    "fabricloader": ">=0.4.0",
+    "fabricloader": ">=0.14.21",
     "fabric": "*"
   }
 }

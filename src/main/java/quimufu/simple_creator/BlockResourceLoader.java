@@ -78,6 +78,8 @@ public class BlockResourceLoader extends GenericManualResourceLoader<Pair<Block,
         if (burnChance != -1 && spreadChance != -1) {
             FlammableBlockRegistry.getDefaultInstance().add(resB, spreadChance, burnChance);
         }
+
+        SimpleCreatorMod.BLOCKS_RENDER_LAYER.add(new Pair<>(resB, bspj.renderLayer));
         return new Pair<>(resB, resI);
     }
 

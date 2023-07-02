@@ -35,17 +35,6 @@ repositories {
     }
 }
 
-loom {
-	splitEnvironmentSourceSets()
-
-	mods {
-		"modid" {
-			sourceSet sourceSets.main
-			sourceSet sourceSets.client
-		}
-	}
-
-}
 
 dependencies {
 	// To change the versions see the gradle.properties file
@@ -70,15 +59,13 @@ dependencies {
 	include(modApi("de.siphalor.tweed4:tweed4-tailor-screen-$project.minecraft_major_version"))
 
 
-	modImplementation("me.shedaniel.cloth:cloth-config-fabric:$project.cloth_config_version") {
-		exclude(group: "net.fabricmc.fabric-api")
-	}
+	modImplementation("me.shedaniel.cloth:cloth-config-fabric:$project.cloth_config_version")
 	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 }
 
 configurations.include.transitive = true
 configurations.include.dependencies.each {
-    if (!it.name.contains("bom")) {
+    if (!it.name.contains("bom") && !it.name.contains("fabric")) {
         it.transitive = false
     }
 }

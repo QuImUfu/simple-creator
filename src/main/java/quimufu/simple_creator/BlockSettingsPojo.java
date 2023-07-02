@@ -29,5 +29,6 @@ public class BlockSettingsPojo {
     public boolean noBlockBreakParticles = false;
     public boolean requiresTool = false;
     public boolean breaksInstantly = false;
-    String mapColor = "stone";
+    public String renderLayer = "solid";
+    public String mapColor = "stone";
 }
