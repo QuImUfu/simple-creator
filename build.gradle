@@ -20,6 +20,19 @@ repositories {
 	maven { url 'https://jitpack.io' }
     maven { url "https://maven.shedaniel.me/" }
     maven { url "https://maven.terraformersmc.com/releases/" }
+    maven {
+        name = 'Ladysnake Mods'
+        url = 'https://ladysnake.jfrog.io/artifactory/mods'
+    }
+    maven {
+        url = "https://api.modrinth.com/maven"
+    }
+
+    maven {
+        url = uri("https://ueaj.dev/maven")
+        // for 0.4.2 and older
+        // url uri("https://raw.githubusercontent.com/Devan-Kerman/Devan-Repo/master/")
+    }
 }
 
 loom {
@@ -61,6 +74,13 @@ dependencies {
 		exclude(group: "net.fabricmc.fabric-api")
 	}
 	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
+}
+
+configurations.include.transitive = true
+configurations.include.dependencies.each {
+    if (!it.name.contains("bom")) {
+        it.transitive = false
+    }
 }
 
 processResources {
