@@ -1,6 +1,12 @@
 package quimufu.simple_creator;
 
+import de.siphalor.tweed4.Tweed;
+import de.siphalor.tweed4.config.ConfigEnvironment;
+import de.siphalor.tweed4.config.ConfigLoader;
+import de.siphalor.tweed4.config.TweedRegistry;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.util.Pair;
 import org.apache.logging.log4j.Level;
@@ -23,6 +29,12 @@ public class SimpleCreatorMod implements ModInitializer {
     @Override
     public void onInitialize() {
         log(Level.INFO, "Initializing");
+		Tweed.runEntryPoints();
+
+		ConfigLoader.initialReload(
+				TweedRegistry.getConfigFile(MOD_ID),
+				FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER ? ConfigEnvironment.SERVER : ConfigEnvironment.UNIVERSAL
+		);
         irl.load();
         brl.load();
     }

@@ -2,15 +2,19 @@ package quimufu.simple_creator;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import org.apache.logging.log4j.Level;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Optional;
 
+import static quimufu.simple_creator.SimpleCreatorMod.MOD_ID;
 import static quimufu.simple_creator.SimpleCreatorMod.log;
 
 public abstract class GenericManualResourceLoader<T> {
@@ -43,7 +47,7 @@ public abstract class GenericManualResourceLoader<T> {
 
     public void load() {
 
-        if (true) {
+        if (SimpleCreatorConfig.enableTestThings) {
             createFromResource("simple_creator/blocks/test_block.json");
             createFromResource("simple_creator/items/test_item.json");
         }
@@ -103,10 +107,21 @@ public abstract class GenericManualResourceLoader<T> {
     }
 
     private static void createFromResource(String path) {
-        try (InputStream blocks = ClassLoader.getSystemClassLoader().getResourceAsStream("data/" + path)) {
+        Optional<ModContainer> modContainerOp = FabricLoader.getInstance().getModContainer(MOD_ID);
+        if(modContainerOp.isEmpty()){
+            log(Level.ERROR,"ModContainer " + MOD_ID + " not Found" );
+            return;
+        }
+        Optional<Path> nioPath = modContainerOp
+                .flatMap(modContainer -> modContainer.findPath("data/" + path));
+        if(nioPath.isEmpty()){
+            log(Level.ERROR,"data/" + path + " Not Found" );
+            return;
+        }
+        try (InputStream blocks = Files.newInputStream(nioPath.get())) {
 
             File file = new File("./simplyCreated/" + path);
-            if (!file.exists() && blocks != null) {
+            if (!file.exists()) {
 
                 File parent = file.getParentFile();
                 if (parent != null && !parent.exists() && !parent.mkdirs()) {
