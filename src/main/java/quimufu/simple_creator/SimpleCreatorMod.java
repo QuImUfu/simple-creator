@@ -29,12 +29,12 @@ public class SimpleCreatorMod implements ModInitializer {
     @Override
     public void onInitialize() {
         log(Level.INFO, "Initializing");
-		Tweed.runEntryPoints();
+        Tweed.runEntryPoints();
 
-		ConfigLoader.initialReload(
-				TweedRegistry.getConfigFile(MOD_ID),
-				FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER ? ConfigEnvironment.SERVER : ConfigEnvironment.UNIVERSAL
-		);
+        ConfigLoader.initialReload(
+                TweedRegistry.getConfigFile(MOD_ID),
+                FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER ? ConfigEnvironment.SERVER : ConfigEnvironment.UNIVERSAL
+        );
         irl.load();
         brl.load();
     }

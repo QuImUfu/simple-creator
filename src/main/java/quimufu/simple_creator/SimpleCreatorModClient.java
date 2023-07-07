@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Level;
 public class SimpleCreatorModClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        SimpleCreatorMod.log(Level.INFO, "Client init");
         for (Pair<Block, String> blockRenderLayerPair : SimpleCreatorMod.BLOCKS_RENDER_LAYER) {
             BlockRenderLayerMap.INSTANCE.putBlock(blockRenderLayerPair.getLeft(), getRenderLayer(blockRenderLayerPair.getRight()));
         }

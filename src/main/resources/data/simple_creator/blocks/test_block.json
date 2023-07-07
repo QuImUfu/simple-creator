@@ -1,5 +1,4 @@
 {
-  "material": "ice",
   "mapColor": "yellow",
   "collidable": true,
   "soundGroup": "wool",
@@ -13,5 +12,20 @@
   "slowDownMultiplier": 2.0,
   "jumpVelocityMultiplier": 2.0,
   "opaque": true,
-  "itemGroup": "food"
+  "itemGroup": "minecraft:building_blocks",
+  "allowsSpawning": true,
+  "solidBlock": true,
+  "suffocates": true,
+  "blockVision": true,
+  "postProcess": false,
+  "emissiveLighting": false,
+  "modelOffset": "none",
+  "pistonBehavior": "normal",
+  "instrument": "harp",
+  "burnable": false,
+  "replaceable": false,
+  "noBlockBreakParticles": false,
+  "requiresTool": false,
+  "breaksInstantly": false,
+  "renderLayer": "solid"
 }
