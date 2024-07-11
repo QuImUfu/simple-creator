@@ -1,5 +1,7 @@
 Simple Item/Block Creator
 -----------
+**Moved to https://merl.dnshome.de/git/QuImUfu/simple-creator**
+
 This mod allows adding new Blocks and items.  
 Its not called simple cause its simple to use, 
 its called simple because its code is as simple 
